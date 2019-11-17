@@ -1904,6 +1904,16 @@ $(RECOVERY_INSTALL_OTA_KEYS): $(SOONG_ZIP) $(OTA_PUBLIC_KEYS) $(extra_keys)
 
 RECOVERYIMAGE_ID_FILE := $(PRODUCT_OUT)/recovery.id
 
+ifneq ($(TARGET_PREBUILT_RECOVERY_RAMDISK_CPIO),)
+define build-recoveryramdisk
+  @echo -e ${CL_CYN}"----- Extracting recovery ramdisk ------"${CL_RST}
+  $(hide) mkdir -p $(TARGET_RECOVERY_OUT)
+  $(hide) mkdir -p $(TARGET_RECOVERY_ROOT_OUT)
+  $(hide) rm -rf $(TARGET_RECOVERY_ROOT_OUT)/*
+  $(hide) cp $(TARGET_PREBUILT_RECOVERY_RAMDISK_CPIO) $(TARGET_RECOVERY_ROOT_OUT)/prebuilt_ramdisk-recovery.cpio
+  $(hide) cd $(TARGET_RECOVERY_ROOT_OUT) && cpio -id < prebuilt_ramdisk-recovery.cpio && rm -f prebuilt_ramdisk-recovery.cpio
+endef
+else
 define build-recoveryramdisk
   @echo ----- Generating Changelog ------
   $(hide) ./vendor/bootleggers/tools/changelog.sh
@@ -1946,6 +1956,7 @@ $(if $(TARGET_PREBUILT_RECOVERY_RAMDISK), \
   $(hide) unzip -o $(TARGET_PREBUILT_RECOVERY_RAMDISK) -d $(PRODUCT_OUT)/prebuilt_recovery/)
   $(BOARD_RECOVERY_IMAGE_PREPARE)
 endef
+endif
 
 RECOVERYIMAGE_ID_FILE := $(PRODUCT_OUT)/recovery.id
 # $(1): output file
